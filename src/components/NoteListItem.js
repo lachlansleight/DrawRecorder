@@ -9,7 +9,8 @@ const NoteListItem = ({note}) => {
 
     return (
         <Link className="note-list-item" to={`/notes/${note.id}`}>
-            <h4>{moment(note.timestamp).format("h:mm A - Do MMMM YYYY")}</h4>
+            <h4>{note.name}</h4>
+            <p>{moment(note.timestamp).format("Do MMMM YYYY - h:mm A")}</p>
             <p>{note.strokeCount} Strokes, {note.pointCount} Points</p>
         </Link>
     )

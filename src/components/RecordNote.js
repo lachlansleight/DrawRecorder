@@ -190,12 +190,18 @@ const RecordNote = () => {
     }
 
     const saveSketch = () => {
-        if(!window.confirm("Save and clear Canvas?")) return;
+        const saveName = window.prompt("Enter name to save and clear. Leave blank to use current time as name");
+
+        //click "cancel"
+        if(saveName === null) return;
+
+
         const postData = async () => {
 
             setLoading(true);
 
             const finalData = {
+                name: saveName === "" ? moment().format("Do MMMM YYYY - h:mmA") : saveName,
                 timestamp: firstTime,
                 strokeCount: strokes.length,
                 pointCount: strokes.reduce((acc, s) => {
