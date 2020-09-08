@@ -73,19 +73,21 @@ const NoteDetail = ({match}) => {
         if(!canvasContext) return;
         if(!note) return;
 
-        const lastTime = note.strokes[note.strokes.length - 1].time + 1000;
         let time = 0;
         let intervalId;
 
         const frame = () => {
-            if(time >= lastTime || !autoDraw) clearInterval(intervalId);
+            if(time >= endTime || !autoDraw) {
+                setAutoDraw(false);
+                clearInterval(intervalId);
+            }
             if(autoDraw) setDrawTime(time);
-            time += 20;
+            time += 200;
         }
         intervalId = setInterval(frame, 20);
 
         return(() => clearInterval(intervalId));
-    }, [canvasContext, note, autoDraw])
+    }, [canvasContext, note, autoDraw, endTime])
 
     useEffect(() => {
         if(!canvasContext || !note) return;
