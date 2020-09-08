@@ -15,53 +15,41 @@ const RecordNote = () => {
     const [canvasPos, setCanvasPos] = useState({x: 0, y: 0});
     const [firstTime, setFirstTime] = useState(-1);
     const [strokeFirstTime, setStrokeFirstTime] = useState(-1);
-    const [lineWidth, setLineWidth] = useState(1);
-    const [maxLineWidth, setMaxLineWidth] = useState(1);
+    const [strokeWeight, setStrokeWeight] = useState(1);
     const [points, setPoints] = useState([]);
     const [strokes, setStrokes] = useState([]);
     const [mouseDown, setMouseDown] = useState(false);
     const [color, setColor] = useState("white");
     const [strokeMetadata, setStrokeMetadata] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [curData, setCurData] = useState({
-        force: 0,
-        touchType: 0,
-        radiusX: 0,
-        radiusY: 0,
-        rotationAngle: 0,
-        altitudeAngle: 0,
-        azimuthAngle: 0,
-    })
 
-    const addPoint = useCallback((x, y, t) => {
-        setPoints(point => [...point, {
+    const addPoint = useCallback((x, y, w, t) => {
+        const newPoint = {
             p: {x, y},
-            //w: lineWidth,
-            t: t || moment().valueOf() - strokeFirstTime
-        }])
-    }, [lineWidth, firstTime]);
+            w: w || 1,
+            t: t ? t : moment().valueOf() - strokeFirstTime
+        };
+        setPoints(point => [...point, newPoint])
+    }, [strokeFirstTime]);
 
     const handleStrokeStart = useCallback(e => {
-        //let pressure = 0.1;
+        let pressure = 1;
         let x, y;
         if (e.touches && e.touches[0] && typeof e.touches[0]["force"] !== "undefined") {
-            //if (e.touches[0]["force"] > 0) {
-            //    pressure = e.touches[0]["force"]
-            //}
+            if (e.touches[0]["force"] > 0) {
+                pressure = e.touches[0]["force"]
+            }
             x = e.touches[0].pageX - canvasPos.x
             y = e.touches[0].pageY - canvasPos.y
         } else {
-            //pressure = 1.0
+            pressure = 1.0
             x = e.pageX - canvasPos.x
             y = e.pageY - canvasPos.y
         }
     
         setMouseDown(true);
     
-        //const newWidth = Math.log(pressure + 1) * maxLineWidth
-        const newWidth = maxLineWidth;
-        setLineWidth(newWidth);
-        canvasContext.lineWidth = newWidth// pressure * 50;
+        canvasContext.lineWidth = strokeWeight;
         canvasContext.strokeStyle = color
         canvasContext.lineCap = 'round'
         canvasContext.lineJoin = 'round'
@@ -76,14 +64,14 @@ const RecordNote = () => {
 
         setStrokeFirstTime(moment().valueOf());
 
-        addPoint(x, y, 0);
+        addPoint(x, y, pressure, 0);
 
         setStrokeMetadata({
             color,
             time: moment().valueOf() - first,
-            width: maxLineWidth
+            width: strokeWeight
         });
-    }, [addPoint, canvasContext, firstTime, canvasPos, maxLineWidth, color]);
+    }, [addPoint, canvasContext, firstTime, canvasPos, strokeWeight, color]);
 
     const handleStrokeMove = useCallback(e => {
         if (!mouseDown) return;
@@ -103,67 +91,22 @@ const RecordNote = () => {
             y = e.pageY - canvasPos.y
         }
 
-        // smoothen line width
-        //setLineWidth((Math.log(pressure + 1) * maxLineWidth * 0.2 + lineWidth * 0.8))
-        setLineWidth(maxLineWidth);
-
-        // if(points.length > 0) {
-        //     const lastTime = points[points.length - 1].t;
-        //     const newTime = moment().valueOf() - firstTime;
-        //     if(newTime - lastTime < 10) return;
-        //     addPoint(x, y, newTime);
-        // } else addPoint(x, y);
-
-        addPoint(x, y);
+        addPoint(x, y, pressure);
 
         canvasContext.strokeStyle = color
         canvasContext.lineCap = 'round'
         canvasContext.lineJoin = 'round'
-        // canvasContext.lineWidth   = lineWidth// pressure * 50;
-        // canvasContext.lineTo(x, y);
-        // canvasContext.moveTo(x, y);
 
         if (points.length >= 3) {
             const l = points.length - 1
             const xc = (points[l].p.x + points[l - 1].p.x) / 2
             const yc = (points[l].p.y + points[l - 1].p.y) / 2
-            canvasContext.lineWidth = points[l - 1].w
             canvasContext.quadraticCurveTo(points[l - 1].p.x, points[l - 1].p.y, xc, yc)
             canvasContext.stroke()
             canvasContext.beginPath()
             canvasContext.moveTo(xc, yc)
         }
-
-        const touch = e.touches ? e.touches[0] : null
-        if (touch) {
-            setCurData({
-                force : pressure,
-                touchType : `${touch.touchType} ${touch.touchType === 'direct' ? '👆' : '✍️'}`,
-                radiusX : `${touch.radiusX}`,
-                radiusY : `${touch.radiusY}`,
-                rotationAngle : `${touch.rotationAngle}`,
-                altitudeAngle : `${touch.altitudeAngle}`,
-                azimuthAngle : `${touch.azimuthAngle}`,
-            })
-
-            // 'touchev = ' + (e.touches ? JSON.stringify(
-            //   ['force', 'radiusX', 'radiusY', 'rotationAngle', 'altitudeAngle', 'azimuthAngle', 'touchType'].reduce((o, key) => {
-            //     o[key] = e.touches[0][key]
-            //     return o
-            //   }, {})
-            // , null, 2) : '')
-        } else {
-            setCurData({
-                force : pressure,
-                touchType : 0,
-                radiusX : 0,
-                radiusY : 0,
-                rotationAngle : 0,
-                altitudeAngle : 0,
-                azimuthAngle : 0,
-            })
-        }
-    }, [addPoint, canvasContext, lineWidth, mouseDown, points, maxLineWidth, canvasPos, firstTime, color]);
+    }, [addPoint, canvasContext, mouseDown, points, canvasPos, color]);
 
     const handleStrokeEnd = useCallback(e => {
         let x, y;
@@ -189,8 +132,7 @@ const RecordNote = () => {
     
         setStrokes(s => [...s, {...strokeMetadata, pointCount: points.length, points}]);
         setPoints([]);
-        setLineWidth(0);
-    }, [canvasContext, points, canvasPos, color]);
+    }, [canvasContext, points, canvasPos, color, strokeMetadata]);
 
     useEffect(() => {
         const canvas = mainCanvas.current;
@@ -281,7 +223,7 @@ const RecordNote = () => {
             { loading 
             ? <div className="toolbar"><h1 style={{width: "100%", textAlign: "center"}}>Saving</h1></div> 
             : <Toolbar
-                setMaxWidth={newVal => setMaxLineWidth(newVal)}
+                setMaxWidth={newVal => setStrokeWeight(newVal)}
                 color={color}
                 setColor={newVal => setColor(newVal)}
                 undo={undo}

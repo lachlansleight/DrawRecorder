@@ -53,7 +53,7 @@ const NoteDetail = ({match}) => {
                 ctx.moveTo(points[0].p.x, points[1].p.y)
 
                 for(let i = 1; i < points.length; i++) {
-                    if(points[i].t - startTime + stroke.time > time) continue;
+                    if(stroke.time + points[i].t > time) continue;
                     ctx.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
                     ctx.stroke()
 
