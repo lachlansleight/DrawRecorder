@@ -47,15 +47,17 @@ const NoteDetail = ({match}) => {
         strokes
             .filter(stroke => !time || stroke.time < time)
             .forEach(stroke => {
-                ctx.lineWidth = stroke.width
-                ctx.strokeStyle = stroke.color
                 const points = stroke.points;
+                
+                ctx.lineWidth = stroke.width * (1 + points[0].w)
+                ctx.strokeStyle = stroke.color
 
                 ctx.beginPath()
                 ctx.moveTo(points[0].p.x, points[1].p.y)
 
                 for(let i = 1; i < points.length; i++) {
                     if(stroke.time + points[i].t > time) continue;
+                    ctx.lineWidth = stroke.width * (1 + points[i].w);
                     ctx.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
                     ctx.stroke()
 
