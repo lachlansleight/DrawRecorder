@@ -1,0 +1,9 @@
+.main-nav .container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-nav ul {
+    display: flex;
+
+}
