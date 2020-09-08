@@ -95,17 +95,27 @@ const NoteDetail = ({match}) => {
     return (
         <div>
             <div className="toolbar">
-                <input 
-                    type="range" 
-                    min="0" 
-                    max={endTime} 
-                    value={drawTime} 
-                    onChange={e => setDrawTime(e.target.value)}
-                />
-                <button type="button" onClick={() => {
-                    setAutoDraw(false);
-                    setDrawTime(endTime);
-                }}>Skip to End</button>
+                <div className="container">
+                    <button type="button" onClick={() => {
+                        setAutoDraw(true);
+                        setDrawTime(0);
+                    }}>Skip to Start</button>
+                    <input 
+                        disabled={autoDraw}
+                        type="range" 
+                        min="0" 
+                        max={endTime} 
+                        value={drawTime} 
+                        onChange={e => setDrawTime(e.target.value)}
+                        style={{
+                            width: "60%"
+                        }}
+                    />
+                    <button type="button" onClick={() => {
+                        setAutoDraw(false);
+                        setDrawTime(endTime);
+                    }}>Skip to End</button>
+                </div>
             </div>
             <canvas ref={mainCanvas} width={window.innerWidth - 17} height={window.innerHeight-64}></canvas>
         </div>
