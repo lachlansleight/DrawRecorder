@@ -12,6 +12,7 @@ const NoteDetail = ({match}) => {
     const [note, setNote] = useState(null);
     const [drawTime, setDrawTime] = useState(0);
     const [autoDraw, setAutoDraw] = useState(true);
+    const [endTime, setEndTime] = useState(1);
 
     useEffect(() => {
         setNote(data.notes.find(note => note.id === match.params.id));
@@ -21,7 +22,10 @@ const NoteDetail = ({match}) => {
     useEffect(() => {
         if(!note) return;
 
-        
+        const lastStroke = note.strokes.slice(-1)[0];
+        const lastPoint = lastStroke.points.slice(-1)[0];
+        setEndTime(lastStroke.time + lastPoint.t);
+
     }, [note])
 
     const mainCanvas = useRef(0);
@@ -43,8 +47,6 @@ const NoteDetail = ({match}) => {
         strokes
             .filter(stroke => !time || stroke.time < time)
             .forEach(stroke => {
-                const startTime = stroke.points[0].t;
-
                 ctx.lineWidth = stroke.width
                 ctx.strokeStyle = stroke.color
                 const points = stroke.points;
@@ -96,13 +98,13 @@ const NoteDetail = ({match}) => {
                 <input 
                     type="range" 
                     min="0" 
-                    max={!note ? 1 : note.strokes[note.strokes.length - 1].time + 1000} 
+                    max={endTime} 
                     value={drawTime} 
                     onChange={e => setDrawTime(e.target.value)}
                 />
                 <button type="button" onClick={() => {
                     setAutoDraw(false);
-                    setDrawTime(!note ? 1 : note.strokes[note.strokes.length - 1].time + 1000);
+                    setDrawTime(endTime);
                 }}>Skip to End</button>
             </div>
             <canvas ref={mainCanvas} width={window.innerWidth - 17} height={window.innerHeight-64}></canvas>
