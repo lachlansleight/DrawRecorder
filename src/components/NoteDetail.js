@@ -10,6 +10,8 @@ const NoteDetail = ({match}) => {
 
     const {data} = useContext(DataContext);
     const [note, setNote] = useState(null);
+    const [drawTime, setDrawTime] = useState(0);
+    const [autoDraw, setAutoDraw] = useState(true);
 
     useEffect(() => {
         setNote(data.notes.find(note => note.id === match.params.id));
@@ -24,13 +26,9 @@ const NoteDetail = ({match}) => {
 
     const mainCanvas = useRef(0);
     const [canvasContext, setCanvasContext] = useState(null);
-    const [canvasPos, setCanvasPos] = useState({x: 0, y: 0});
     useEffect(() => {
-        console.log(mainCanvas.current);
         if(mainCanvas.current) {
             const ctx = mainCanvas.current.getContext('2d');
-            const rect = mainCanvas.current.getBoundingClientRect();
-            setCanvasPos({x: rect.left, y: rect.top});
             if(ctx) {
                 ctx.lineCap = 'round'
                 ctx.lineJoin = 'round'
@@ -39,37 +37,76 @@ const NoteDetail = ({match}) => {
         }
     }, [canvasContext])
 
+    const drawCanvas = (ctx, strokes, time) => {
+        ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+
+        strokes
+            .filter(stroke => !time || stroke.time < time)
+            .forEach(stroke => {
+                const startTime = stroke.points[0].t;
+
+                ctx.lineWidth = stroke.width
+                ctx.strokeStyle = stroke.color
+                const points = stroke.points;
+
+                ctx.beginPath()
+                ctx.moveTo(points[0].p.x, points[1].p.y)
+
+                for(let i = 1; i < points.length; i++) {
+                    if(points[i].t - startTime + stroke.time > time) continue;
+                    ctx.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
+                    ctx.stroke()
+
+                    if(i !== points.length - 1) {
+                        ctx.beginPath()
+                        ctx.moveTo(points[i].p.x, points[i].p.y)
+                    }
+                }
+            })
+    }
+
     useEffect(() => {
         if(!canvasContext) return;
         if(!note) return;
 
-        note.strokes.forEach(stroke => {
-            canvasContext.lineWidth = stroke.width
-            canvasContext.strokeStyle = stroke.color
-            const points = stroke.points;
+        const lastTime = note.strokes[note.strokes.length - 1].time + 1000;
+        let time = 0;
+        let intervalId;
 
-            canvasContext.beginPath()
-            canvasContext.moveTo(points[0].p.x, points[1].p.y)
+        const frame = () => {
+            if(time >= lastTime || !autoDraw) clearInterval(intervalId);
+            if(autoDraw) setDrawTime(time);
+            time += 20;
+        }
+        intervalId = setInterval(frame, 20);
 
-            for(let i = 1; i < points.length; i++) {
-                canvasContext.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
-                canvasContext.stroke()
+        return(() => clearInterval(intervalId));
+    }, [canvasContext, note, autoDraw])
 
-                if(i !== points.length - 1) {
-                    canvasContext.beginPath()
-                    canvasContext.moveTo(points[i].p.x, points[i].p.y)
-                }
-            }
-        })
-    }, [canvasContext, note])
+    useEffect(() => {
+        if(!canvasContext || !note) return;
 
-    const drawCanvas = (ctx, strokes) => {
-        ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
-        
-    }
+        drawCanvas(canvasContext, note.strokes, drawTime);
+
+    }, [canvasContext, note, drawTime])
 
     return (
-        <canvas ref={mainCanvas} width={window.innerWidth - 17} height={window.innerHeight-64}></canvas>
+        <div>
+            <div className="toolbar">
+                <input 
+                    type="range" 
+                    min="0" 
+                    max={!note ? 1 : note.strokes[note.strokes.length - 1].time + 1000} 
+                    value={drawTime} 
+                    onChange={e => setDrawTime(e.target.value)}
+                />
+                <button type="button" onClick={() => {
+                    setAutoDraw(false);
+                    setDrawTime(!note ? 1 : note.strokes[note.strokes.length - 1].time + 1000);
+                }}>Skip to End</button>
+            </div>
+            <canvas ref={mainCanvas} width={window.innerWidth - 17} height={window.innerHeight-64}></canvas>
+        </div>
     )
 
 }
