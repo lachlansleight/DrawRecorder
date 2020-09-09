@@ -121,7 +121,7 @@ const RecordNote = () => {
             canvasContext.beginPath()
             canvasContext.moveTo(xc, yc)
         }
-    }, [addPoint, canvasContext, mouseDown, points, canvasPos, color]);
+    }, [addPoint, canvasContext, mouseDown, points, canvasPos, strokeWeight]);
 
     const handleStrokeEnd = useCallback(e => {
         let x, y;
@@ -149,7 +149,7 @@ const RecordNote = () => {
     
         setStrokes(s => [...s, {...strokeMetadata, pointCount: points.length, points}]);
         setPoints([]);
-    }, [canvasContext, points, canvasPos, color, strokeMetadata]);
+    }, [canvasContext, points, canvasPos, strokeMetadata, strokeWeight]);
 
     useEffect(() => {
         const canvas = mainCanvas.current;
@@ -248,7 +248,7 @@ const RecordNote = () => {
                     const centerY = (points[i - 1].p.y + points[i - 2].p.y) / 2;
                     canvasContext.quadraticCurveTo(points[i - 2].p.x, points[i - 2].p.y, centerX, centerY)
 
-                    if(i == points.length - 1) {
+                    if(i === points.length - 1) {
                         canvasContext.quadraticCurveTo(points[i-1].p.x, points[i-1].p.y, points[i].p.x, points[i].p.y);
                     }
 
