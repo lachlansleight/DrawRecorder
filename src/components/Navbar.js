@@ -9,7 +9,7 @@ const Navbar = () => {
             <div className="container">
                 <div className="logo">
                     <div>
-                        <Link to={`/`}>Draw Recorder</Link>
+                        <Link to={`/`}>Draw Recorder<span className="version-number">v0.1.2</span></Link>
                     </div>
                 </div>
                 <ul>
