@@ -175,7 +175,16 @@ code {
   width: 40%;
   height: 48px;
   outline: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.toolbar .slider input {
   display: block;
+  height: 100%;
+  width: 80%;
+  margin: auto 1em;
 }
 
 .toolbar ul {

@@ -7,17 +7,20 @@ const Toolbar = ({setMaxWidth, color, setColor, undo, redo, undoAvailable, redoA
     return (
         <div className="toolbar">
             <div className="container">
-                <input 
-                    className="slider"
-                    type="range" 
-                    value={width}
-                    min='1' 
-                    max='10' 
-                    onChange={e => {
-                        setWidth(e.target.value);
-                        setMaxWidth(e.target.value);
-                    }}
-                    />
+                <div className="slider">
+                    <span>●</span>
+                    <input 
+                        type="range" 
+                        value={width}
+                        min='1' 
+                        max='10' 
+                        onChange={e => {
+                            setWidth(e.target.value);
+                            setMaxWidth(e.target.value);
+                        }}
+                        />
+                    <span>⬤</span>
+                </div>
                 <ul>
                     <li 
                         style={{
