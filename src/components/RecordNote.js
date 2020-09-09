@@ -143,7 +143,7 @@ const RecordNote = () => {
         if (points.length >= 3) {
             const l = points.length - 1
             canvasContext.lineWidth = strokeWeight * (1 + pressure);
-            canvasContext.quadraticCurveTo(points[l].x, points[l].y, x, y)
+            canvasContext.quadraticCurveTo(points[l].p.x, points[l].p.y, x, y)
             canvasContext.stroke()
         }
     
@@ -239,17 +239,22 @@ const RecordNote = () => {
                 canvasContext.strokeStyle = colorToHex(stroke.color);
 
                 canvasContext.beginPath()
-                canvasContext.moveTo(points[0].p.x, points[1].p.y)
+                canvasContext.moveTo(points[0].p.x, points[0].p.y)
 
-                for(let i = 1; i < points.length; i++) {
+                for(let i = 2; i < points.length; i++) {
                     canvasContext.lineWidth = stroke.width * (1 + points[i].w);
-                    canvasContext.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
-                    canvasContext.stroke()
+                    
+                    const centerX = (points[i - 1].p.x + points[i - 2].p.x) / 2;
+                    const centerY = (points[i - 1].p.y + points[i - 2].p.y) / 2;
+                    canvasContext.quadraticCurveTo(points[i - 2].p.x, points[i - 2].p.y, centerX, centerY)
 
-                    if(i !== points.length - 1) {
-                        canvasContext.beginPath()
-                        canvasContext.moveTo(points[i].p.x, points[i].p.y)
+                    if(i == points.length - 1) {
+                        canvasContext.quadraticCurveTo(points[i-1].p.x, points[i-1].p.y, points[i].p.x, points[i].p.y);
                     }
+
+                    canvasContext.stroke()
+                    canvasContext.beginPath()
+                    canvasContext.moveTo(centerX, centerY)
                 }
             })
     }, [canvasContext]);

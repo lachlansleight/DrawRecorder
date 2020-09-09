@@ -68,21 +68,36 @@ const NoteDetail = ({match}) => {
                 ctx.strokeStyle = colorToHex(stroke.color);
 
                 ctx.beginPath()
-                ctx.moveTo(points[0].p.x, points[1].p.y)
+                ctx.moveTo(points[0].p.x, points[0].p.y)
 
-                for(let i = 1; i < points.length; i++) {
+                for(let i = 2; i < points.length; i++) {
                     if(stroke.time + points[i].t > time) continue;
                     ctx.lineWidth = stroke.width * (1 + points[i].w);
-                    ctx.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
-                    ctx.stroke()
+                    
+                    const centerX = (points[i - 1].p.x + points[i - 2].p.x) / 2;
+                    const centerY = (points[i - 1].p.y + points[i - 2].p.y) / 2;
+                    ctx.quadraticCurveTo(points[i - 2].p.x, points[i - 2].p.y, centerX, centerY)
 
-                    if(i !== points.length - 1) {
-                        ctx.beginPath()
-                        ctx.moveTo(points[i].p.x, points[i].p.y)
+                    if(i == points.length - 1) {
+                        ctx.quadraticCurveTo(points[i-1].p.x, points[i-1].p.y, points[i].p.x, points[i].p.y);
                     }
+
+                    ctx.stroke()
+                    ctx.beginPath()
+                    ctx.moveTo(centerX, centerY)
                 }
             })
     }
+
+
+    // const l = points.length - 1
+    // const xc = (points[l].p.x + points[l - 1].p.x) / 2
+    // const yc = (points[l].p.y + points[l - 1].p.y) / 2
+    // canvasContext.lineWidth = strokeWeight * (1 + pressure);
+    // canvasContext.quadraticCurveTo(points[l - 1].p.x, points[l - 1].p.y, xc, yc)
+    // canvasContext.stroke()
+    // canvasContext.beginPath()
+    // canvasContext.moveTo(xc, yc)
 
     useEffect(() => {
         if(!canvasContext) return;
