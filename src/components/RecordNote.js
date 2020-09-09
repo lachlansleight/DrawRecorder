@@ -283,6 +283,7 @@ const RecordNote = () => {
             try {
                 const response = await axios.post("https://ipadstrokerecorder.firebaseio.com/notes.json", finalData);
                 console.log("Post Successful", response.data);
+                window.location.href = process.env.PUBLIC_URL;
             } catch (err) {
                 console.log("Post failed", err);
             }
