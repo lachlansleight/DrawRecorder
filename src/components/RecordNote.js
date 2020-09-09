@@ -43,7 +43,7 @@ const RecordNote = () => {
         const newPoint = {
             p: {x, y},
             w: w || 1,
-            t: t ? t : moment().valueOf() - strokeFirstTime
+            t: t === undefined ? 0 : moment().valueOf() - strokeFirstTime
         };
         setPoints(point => [...point, newPoint])
     }, [strokeFirstTime]);
@@ -78,7 +78,7 @@ const RecordNote = () => {
 
         setStrokeFirstTime(moment().valueOf());
 
-        addPoint(x, y, pressure, 0);
+        addPoint(x, y, pressure);
 
         setStrokeMetadata({
             color,
