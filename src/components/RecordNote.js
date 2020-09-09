@@ -146,6 +146,7 @@ const RecordNote = () => {
             canvasContext.quadraticCurveTo(points[l].p.x, points[l].p.y, x, y)
             canvasContext.stroke()
         }
+        addPoint(x, y, pressure);
     
         setStrokes(s => [...s, {...strokeMetadata, pointCount: points.length, points}]);
         setPoints([]);
