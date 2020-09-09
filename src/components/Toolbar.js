@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 
-const Toolbar = ({setMaxWidth, color, setColor, undo, clear, save}) => {
+const Toolbar = ({setMaxWidth, color, setColor, undo, redo, undoAvailable, redoAvailable, clear, save}) => {
 
     const [width, setWidth] = useState(1);
 
@@ -53,7 +53,8 @@ const Toolbar = ({setMaxWidth, color, setColor, undo, clear, save}) => {
                         onClick={() => setColor("green")}></li>
                 </ul>
                 <div>
-                    <button onClick={() => undo()}>Undo</button>
+                    <button disabled={!undoAvailable} onClick={() => undo()}>Undo</button>
+                    <button disabled={!redoAvailable} onClick={() => redo()}>Redo</button>
                     <button onClick={() => clear()}>Clear</button>
                     <button onClick={() => save()}>Save</button>
                 </div>

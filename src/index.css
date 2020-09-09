@@ -202,3 +202,7 @@ code {
   color: #fff;
   border-style: none;
 }
+
+.toolbar button:disabled {
+  background-color: #444;
+}

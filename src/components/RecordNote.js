@@ -22,6 +22,7 @@ const RecordNote = () => {
     const [color, setColor] = useState("white");
     const [strokeMetadata, setStrokeMetadata] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [redoStack, setRedoStack] = useState([]);
 
     const addPoint = useCallback((x, y, w, t) => {
         const newPoint = {
@@ -49,10 +50,8 @@ const RecordNote = () => {
     
         setMouseDown(true);
     
-        canvasContext.lineWidth = strokeWeight;
+        canvasContext.lineWidth = strokeWeight * (1 + pressure);
         canvasContext.strokeStyle = color
-        canvasContext.lineCap = 'round'
-        canvasContext.lineJoin = 'round'
         canvasContext.beginPath()
         canvasContext.moveTo(x, y)
     
@@ -71,6 +70,10 @@ const RecordNote = () => {
             time: moment().valueOf() - first,
             width: strokeWeight
         });
+
+        //can no longer redo anything!
+        setRedoStack([]);
+
     }, [addPoint, canvasContext, firstTime, canvasPos, strokeWeight, color]);
 
     const handleStrokeMove = useCallback(e => {
@@ -94,13 +97,12 @@ const RecordNote = () => {
         addPoint(x, y, pressure);
 
         canvasContext.strokeStyle = color
-        canvasContext.lineCap = 'round'
-        canvasContext.lineJoin = 'round'
 
         if (points.length >= 3) {
             const l = points.length - 1
             const xc = (points[l].p.x + points[l - 1].p.x) / 2
             const yc = (points[l].p.y + points[l - 1].p.y) / 2
+            canvasContext.lineWidth = strokeWeight * (1 + pressure);
             canvasContext.quadraticCurveTo(points[l - 1].p.x, points[l - 1].p.y, xc, yc)
             canvasContext.stroke()
             canvasContext.beginPath()
@@ -110,22 +112,24 @@ const RecordNote = () => {
 
     const handleStrokeEnd = useCallback(e => {
         let x, y;
+        let pressure;
         if (e.touches && e.touches[0] && typeof e.touches[0]["force"] !== "undefined") {
+            if (e.touches[0]["force"] > 0) {
+                pressure = e.touches[0]["force"]
+            }
             x = e.touches[0].pageX - canvasPos.x
             y = e.touches[0].pageY - canvasPos.y
         } else {
+            pressure = 1.0
             x = e.pageX - canvasPos.x
             y = e.pageY - canvasPos.y
         }
     
         setMouseDown(false);
     
-        canvasContext.strokeStyle = color
-        canvasContext.lineCap = 'round'
-        canvasContext.lineJoin = 'round'
-    
         if (points.length >= 3) {
             const l = points.length - 1
+            canvasContext.lineWidth = strokeWeight * (1 + pressure);
             canvasContext.quadraticCurveTo(points[l].x, points[l].y, x, y)
             canvasContext.stroke()
         }
@@ -170,12 +174,34 @@ const RecordNote = () => {
             setCanvasPos({x: rect.left, y: rect.top});
             if(ctx) {
                 setCanvasContext(ctx);
+                ctx.lineCap = 'round'
+                ctx.lineJoin = 'round'
             }
         }
     }, [canvasContext])
 
     const undo = () => {
-        setStrokes(strokes.slice(0, strokes.length - 2));
+        //add the most recent stroke onto the front of the redo stack
+        setRedoStack([strokes.slice(-1)[0], ...redoStack]);
+
+        //repopulate the canvas - do this first because react?
+        redrawSketch(strokes.slice(0, strokes.length - 1));
+
+        //remove the most recent stroke from the strokes array
+        setStrokes(strokes.slice(0, strokes.length - 1));
+    }
+
+    const redo = () => {
+        if(!redoStack || redoStack.length === 0) return;
+
+        //add the first item from the redo stack onto the strokes array
+        setStrokes([...strokes, redoStack[0]]);
+
+        //repopulate the canvas - do this first because react?
+        redrawSketch([...strokes, redoStack[0]]);
+
+        //remove the first item from the redo stack
+        setRedoStack(redoStack.slice(1));
     }
 
     const clearSketch = (skipWarning) => {
@@ -188,6 +214,32 @@ const RecordNote = () => {
         setFirstTime(-1);
         setStrokeFirstTime(-1);
     }
+
+    const redrawSketch = useCallback(strokes => {
+        canvasContext.clearRect(0, 0, canvasContext.canvas.clientWidth, canvasContext.canvas.clientHeight);
+
+        strokes
+            .forEach(stroke => {
+                const points = stroke.points;
+                
+                canvasContext.lineWidth = stroke.width * (1 + points[0].w)
+                canvasContext.strokeStyle = stroke.color
+
+                canvasContext.beginPath()
+                canvasContext.moveTo(points[0].p.x, points[1].p.y)
+
+                for(let i = 1; i < points.length; i++) {
+                    canvasContext.lineWidth = stroke.width * (1 + points[i].w);
+                    canvasContext.quadraticCurveTo(points[i - 1].p.x, points[i - 1].p.y, points[i].p.x, points[i].p.y)
+                    canvasContext.stroke()
+
+                    if(i !== points.length - 1) {
+                        canvasContext.beginPath()
+                        canvasContext.moveTo(points[i].p.x, points[i].p.y)
+                    }
+                }
+            })
+    }, [canvasContext]);
 
     const saveSketch = () => {
         const saveName = window.prompt("Enter name to save and clear. Leave blank to use current time as name");
@@ -233,6 +285,9 @@ const RecordNote = () => {
                 color={color}
                 setColor={newVal => setColor(newVal)}
                 undo={undo}
+                redo={redo}
+                undoAvailable={strokes && strokes.length > 0}
+                redoAvailable={redoStack && redoStack.length > 0}
                 clear={clearSketch}
                 save={saveSketch} 
             />
