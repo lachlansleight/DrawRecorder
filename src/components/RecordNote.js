@@ -24,6 +24,21 @@ const RecordNote = () => {
     const [loading, setLoading] = useState(false);
     const [redoStack, setRedoStack] = useState([]);
 
+    const colorToHex = color => {
+        switch(color) {
+            case 'red':
+                return "#d03428";
+            case 'blue':
+                return "#1974fd";
+            case 'green':
+                return "#41c30f";
+            case 'default':
+                return "#ffffff";
+            default:
+                return "#ffffff";
+        }
+    }
+
     const addPoint = useCallback((x, y, w, t) => {
         const newPoint = {
             p: {x, y},
@@ -51,7 +66,7 @@ const RecordNote = () => {
         setMouseDown(true);
     
         canvasContext.lineWidth = strokeWeight * (1 + pressure);
-        canvasContext.strokeStyle = color
+        canvasContext.strokeStyle = colorToHex(color);
         canvasContext.beginPath()
         canvasContext.moveTo(x, y)
     
@@ -95,8 +110,6 @@ const RecordNote = () => {
         }
 
         addPoint(x, y, pressure);
-
-        canvasContext.strokeStyle = color
 
         if (points.length >= 3) {
             const l = points.length - 1
@@ -223,7 +236,7 @@ const RecordNote = () => {
                 const points = stroke.points;
                 
                 canvasContext.lineWidth = stroke.width * (1 + points[0].w)
-                canvasContext.strokeStyle = stroke.color
+                canvasContext.strokeStyle = colorToHex(stroke.color);
 
                 canvasContext.beginPath()
                 canvasContext.moveTo(points[0].p.x, points[1].p.y)

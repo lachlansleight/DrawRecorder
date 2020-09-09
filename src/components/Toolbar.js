@@ -21,15 +21,15 @@ const Toolbar = ({setMaxWidth, color, setColor, undo, redo, undoAvailable, redoA
                 <ul>
                     <li 
                         style={{
-                            backgroundColor: "white",
-                            border: (color === "white"
+                            backgroundColor: "#ffffff",
+                            border: (color === "default"
                                 ? "2px solid black"
                                 : "none")
                         }} 
-                        onClick={() => setColor("white")}></li>
+                        onClick={() => setColor("default")}></li>
                     <li 
                         style={{
-                            backgroundColor: "red",
+                            backgroundColor: "#d03428",
                             border: (color === "red"
                                 ? "2px solid black"
                                 : "none")
@@ -37,7 +37,7 @@ const Toolbar = ({setMaxWidth, color, setColor, undo, redo, undoAvailable, redoA
                         onClick={() => setColor("red")}></li>
                     <li 
                         style={{
-                            backgroundColor: "blue",
+                            backgroundColor: "#1974fd",
                             border: (color === "blue"
                                 ? "2px solid black"
                                 : "none")
@@ -45,7 +45,7 @@ const Toolbar = ({setMaxWidth, color, setColor, undo, redo, undoAvailable, redoA
                         onClick={() => setColor("blue")}></li>
                     <li 
                         style={{
-                            backgroundColor: "green",
+                            backgroundColor: "#41c30f",
                             border: (color === "green"
                                 ? "2px solid black"
                                 : "none")

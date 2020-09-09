@@ -14,6 +14,21 @@ const NoteDetail = ({match}) => {
     const [autoDraw, setAutoDraw] = useState(true);
     const [endTime, setEndTime] = useState(1);
 
+    const colorToHex = color => {
+        switch(color) {
+            case 'red':
+                return "#d03428";
+            case 'blue':
+                return "#1974fd";
+            case 'green':
+                return "#41c30f";
+            case 'default':
+                return "#ffffff";
+            default:
+                return "#ffffff";
+        }
+    }
+
     useEffect(() => {
         setNote(data.notes.find(note => note.id === match.params.id));
         
@@ -50,7 +65,7 @@ const NoteDetail = ({match}) => {
                 const points = stroke.points;
                 
                 ctx.lineWidth = stroke.width * (1 + points[0].w)
-                ctx.strokeStyle = stroke.color
+                ctx.strokeStyle = colorToHex(stroke.color);
 
                 ctx.beginPath()
                 ctx.moveTo(points[0].p.x, points[1].p.y)
