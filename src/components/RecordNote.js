@@ -150,7 +150,7 @@ const RecordNote = () => {
     
         setStrokes(s => [...s, {...strokeMetadata, pointCount: points.length, points}]);
         setPoints([]);
-    }, [canvasContext, points, canvasPos, strokeMetadata, strokeWeight]);
+    }, [canvasContext, points, canvasPos, strokeMetadata, strokeWeight, addPoint]);
 
     useEffect(() => {
         const canvas = mainCanvas.current;
